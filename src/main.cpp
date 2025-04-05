@@ -1,45 +1,65 @@
 #include <Arduino.h>
 #include <DigiKeyboard.h> 
 #include <Adafruit_NeoPixel.h>
+#include "config.h"
+#include "buttons.h"
+#include "macro.h"
+#include "executor.h"
 
-#define LED_PIN 0
-#define LED_COUNT 1
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel statusRGB(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+Executor executor(3, statusRGB);
 
-#define BUTTON_1 1
-#define BUTTON_2 2
-#define BUTTON_3 5
+void script1() {
+  statusRGB.setPixelColor(LED_PIN, 255, 255, 0);
+  statusRGB.show();
+  DigiKeyboard.write("Hello from script 1!");
+}
+void script2() {
+  statusRGB.setPixelColor(LED_PIN, 0, 255, 255);
+  statusRGB.show();
+  DigiKeyboard.write("Hello from script 2!");
+}
+void script3() {
+  statusRGB.setPixelColor(LED_PIN, 255, 0, 255);
+  statusRGB.show();
+  DigiKeyboard.write("Hello from script 3!");
+}
 
 void setup() {
-  pinMode(BUTTON_1, INPUT);
-  pinMode(BUTTON_2, INPUT);
-  pinMode(BUTTON_3, INPUT);
+  pinMode(BUTTON_LEFT, INPUT);
+  pinMode(BUTTON_MIDDLE, INPUT);
+  pinMode(BUTTON_RIGHT, INPUT);
 
-  strip.begin();
-  strip.setPixelColor(0, 255, 0, 128);
-  strip.show(); // Initialize all pixels to 'off'
+  statusRGB.begin();
+
+  Macro macro1({64, 0, 0}, script1);
+  Macro macro2({0, 64, 0}, script2);
+  Macro macro3({0, 0, 64}, script3);
+
+  executor.addMacro(macro1);
+  executor.addMacro(macro2);
+  executor.addMacro(macro3);
+}
+
+void waitForButtonRelease() {
+  while (getPushedButton() != ButtonType::NONE) {
+    DigiKeyboard.delay(100);
+  }
 }
 
 void loop() {
-  strip.setPixelColor(0, 0, 0, 0);
-  
-  int button1State = digitalRead(BUTTON_1); // read the state of the pushbutton value
-  if (button1State == LOW) {
-    strip.setPixelColor(0, 255, 0, 0);
-  }  
-  int button2State = digitalRead(BUTTON_2); // read the state of the pushbutton value
-  if (button2State == LOW) {
-    strip.setPixelColor(0, 0, 255, 0);
-  } 
-  int button3State = digitalRead(BUTTON_3); // read the state of the pushbutton value
-  if (button3State == LOW) {
-    strip.setPixelColor(0, 0, 0, 255);
-  }
-  
-  strip.show(); // Initialize all pixels to 'off'
-  // DigiKeyboard.sendKeyStroke(0);
+  ButtonType pushedButton = getPushedButton();
 
-  // DigiKeyboard.println("Boom?");
-  
-  DigiKeyboard.delay(500);
+  if(pushedButton == ButtonType::LEFT) {
+    executor.selectPrevious();
+    waitForButtonRelease();
+  } else if (pushedButton == ButtonType::MIDDLE) {
+    executor.executeSelected();
+    waitForButtonRelease();
+  } else if (pushedButton == ButtonType::RIGHT) {
+    executor.selectNext();
+    waitForButtonRelease();
+  }
+
+  DigiKeyboard.delay(100);
 }
