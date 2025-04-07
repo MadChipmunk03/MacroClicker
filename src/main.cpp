@@ -36,7 +36,7 @@ void waitForButtonRelease() {
 void loop() {
   ButtonType pushedButton = getPushedButton();
 
-  if (pushedButton == ButtonType::LEFT) {
+  if (pushedButton == ButtonType::MIDDLE) {
     executor.executeSelected();
     waitForButtonRelease();
   }
