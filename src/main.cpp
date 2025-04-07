@@ -41,16 +41,5 @@ void loop() {
     waitForButtonRelease();
   }
 
-  // if(pushedButton == ButtonType::LEFT) {
-  //   executor.selectPrevious();
-  //   waitForButtonRelease();
-  // } else if (pushedButton == ButtonType::MIDDLE) {
-  //   executor.executeSelected();
-  //   waitForButtonRelease();
-  // } else if (pushedButton == ButtonType::RIGHT) {
-  //   executor.selectNext();
-  //   waitForButtonRelease();
-  // }
-
   DigiKeyboard.delay(100);
 }
